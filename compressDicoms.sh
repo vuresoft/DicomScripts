@@ -33,20 +33,34 @@ shopt -s nullglob
 for file in "$DICOM_DIR"/*; do
     debug "Found file: $file"
 
-# ignore this script file if in same direcetory
+    # Check if the file is a DICOM file (by extension)
     if [[ $file = *.sh ]]; then
         debug "Skipping non-DICOM file: $file"
         continue
     fi
 
-   
- # Attempt to compress the file using JPEG-LS lossless compression
+        if [[ $file = *.txt ]]; then
+        debug "Skipping non-DICOM file: $file"
+        continue
+    fi
+
+    # Extract filename without extension
+    filename=$(basename -- "$file")
+    filename="${filename%.*}.dcm"
+
+        # Attempt to compress the file using JPEG-LS lossless compression
     if dcmcjpls "$file" "$OUTPUT_DIR/${filename}"; then
         echo "Successfully compressed: $file"
+                echo "${filename}" >> "../imagefilelist.txt"
+
     else
         echo "Compression failed for: $file, copying original"
         cp "$file" "$OUTPUT_DIR/${filename}"
     fi
+
+
+
+
 done
 
 echo "Compression complete."
